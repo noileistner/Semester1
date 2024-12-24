@@ -17,17 +17,36 @@
 
 
 struct Doctor {
-    char doctor_id[7];
+    int doctor_id;
     int vacation_month;
 };
 
 struct Visit {
     char name[100];
-    char doctor_id[7];
+    int doctor_id;
     char month[20];
     int num_of_visits;
     int day;
 };
+
+int charToInt(char character[]) {
+    int i=0;
+    int result=0;
+
+    while (character[i] != '\0') {
+        result = (result*10) + (character[i] - '0');
+        i++;
+    }
+
+    return result;
+}
+
+int extractIdFromInput(char input[]) {
+    int id_length = 6;
+    char id[id_length];
+    strncpy(id, input, id_length);
+    return charToInt(id);
+}
 
 void welcomeMessage() {
     int i;
@@ -280,19 +299,12 @@ int promptDoctorId(int num_doctors) {
 
 int removeDoctor(struct Doctor doctors[], int num_doctors, int doctor_id) {
     int i, j, k=0;
-    int id=0;
     
     int removed_doctor=0;
 
     for (i=0; i<num_doctors; i++) {
-        k=0;
-        id=0;
-        while (doctors[i].doctor_id[k] != '\0') {
-            id = (id * 10) + (doctors[i].doctor_id[k] - '0');
-            k++;
-        }
 
-        if (id == doctor_id) {
+        if (doctors[i].doctor_id == doctor_id) {
             for (j = i; j < num_doctors - 1; j++) {
                 doctors[j] = doctors[j + 1];
             }
@@ -309,17 +321,9 @@ int removeDoctor(struct Doctor doctors[], int num_doctors, int doctor_id) {
 
 int removeVisitsForDoctor(int doctor_id, struct Visit visits[], int num_visits) {
     int i=0, k=0, j;
-    int id=0;
 
     while (k < num_visits) {
-        id=0;
-        i=0;
-        while (visits[k].doctor_id[i] != '\0') {
-            id = (id * 10) + (visits[k].doctor_id[i] - '0');
-            i++;
-        }
-
-        if (id == doctor_id) {
+        if (visits[i].doctor_id == doctor_id) {
             for (j = k; j < num_visits - 1; j++) {
                 visits[j] = visits[j + 1];
             }
@@ -415,7 +419,7 @@ int addVisit(struct Visit visits[], struct Doctor doctors[], int num_visits, int
 
     char visit_name[100];
     char id_month_day[100];
-    char visit_id[7];
+    int doctor_id;
     char month_in_str[30];
 
     while (!is_valid_name) {
@@ -444,8 +448,7 @@ int addVisit(struct Visit visits[], struct Doctor doctors[], int num_visits, int
                 is_valid_code = validateVisitCodeFormat(id_month_day);
 
                 if (is_valid_code) {
-                    strncpy(visit_id, id_month_day, 6);
-                    visit_id[6] = '\0';
+                    doctor_id = extractIdFromInput(id_month_day);
 
                     month = (id_month_day[7] - '0') * 10 + (id_month_day[8] - '0');
                     day = (id_month_day[10] - '0') * 10 + (id_month_day[11] - '0');
@@ -509,17 +512,17 @@ int addVisit(struct Visit visits[], struct Doctor doctors[], int num_visits, int
 
     visit_added=0;
     for (i=0; i<num_doctors && !visit_added; i++) {
-        if (strcmp(doctors[i].doctor_id, visit_id) == 1) {
-            printf("Doctor %s not found.\n", visit_id);
+        if (doctors[i].doctor_id == doctor_id) {
+            printf("Doctor %s not found.\n", doctor_id);
         }
         else {
-            if (strcmp(doctors[i].doctor_id, visit_id) == 0) {
+            if (strcmp(doctors[i].doctor_id, doctor_id) == 0) {
                 if (doctors[i].vacation_month == month) {
                     printf("Doctor is on vacation in %s.\n", month_in_str);
                 }
                 else {
                     strcpy(visits[num_visits].name, visit_name);
-                    strcpy(visits[num_visits].doctor_id, visit_id);
+                    strcpy(visits[num_visits].doctor_id, doctor_id);
                     strcpy(visits[num_visits].month, month_in_str);
                     visits[num_visits].day = day;
                     visits[num_visits].num_of_visits++;
